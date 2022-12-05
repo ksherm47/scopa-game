@@ -25,19 +25,19 @@ class ScopaRank(IntEnum):
 def get_prime_points(rank: ScopaRank) -> int:
     if rank == ScopaRank.ACE:
         return 16
-    elif rank == ScopaRank.TWO:
+    if rank == ScopaRank.TWO:
         return 12
-    elif rank == ScopaRank.THREE:
+    if rank == ScopaRank.THREE:
         return 13
-    elif rank == ScopaRank.FOUR:
+    if rank == ScopaRank.FOUR:
         return 14
-    elif rank == ScopaRank.FIVE:
+    if rank == ScopaRank.FIVE:
         return 15
-    elif rank == ScopaRank.SIX:
+    if rank == ScopaRank.SIX:
         return 18
-    elif rank == ScopaRank.SEVEN:
+    if rank == ScopaRank.SEVEN:
         return 21
-    elif rank == ScopaRank.JACK or rank == ScopaRank.QUEEN or rank == ScopaRank.KING:
+    if rank == ScopaRank.JACK or rank == ScopaRank.QUEEN or rank == ScopaRank.KING:
         return 10
 
 
@@ -53,8 +53,46 @@ class ScopaCard:
     def suit(self) -> ScopaSuit:
         return self.__suit
 
+    def __rank_str(self):
+        if self.__rank == ScopaRank.ACE:
+            return 'A'
+        if self.__rank == ScopaRank.TWO:
+            return '2'
+        if self.__rank == ScopaRank.THREE:
+            return '3'
+        if self.__rank == ScopaRank.FOUR:
+            return '4'
+        if self.__rank == ScopaRank.FIVE:
+            return '5'
+        if self.__rank == ScopaRank.SIX:
+            return '6'
+        if self.__rank == ScopaRank.SEVEN:
+            return '7'
+        if self.__rank == ScopaRank.JACK:
+            return 'J'
+        if self.__rank == ScopaRank.QUEEN:
+            return 'Q'
+        if self.__rank == ScopaRank.KING:
+            return 'K'
+
+    def __suit_str(self):
+        if self.__suit == ScopaSuit.COINS:
+            return '\u25ef'
+        if self.__suit == ScopaSuit.CUPS:
+            return '\U0001F377'
+        if self.__suit == ScopaSuit.CLUBS:
+            return '\u2663'
+        if self.__suit == ScopaSuit.SWORDS:
+            return '\u2694'
+
     def __str__(self):
-        return f'{self.__rank.name} of {self.__suit.name}'
+        return f'{self.__rank_str()}{self.__suit_str()}'
+
+    def __eq__(self, other_card):
+        return self.__suit == other_card.__suit and self.__rank == other_card.__rank
+
+    def __hash__(self):
+        return hash((self.__rank, self.__suit))
 
 
 class ScopaDeck:
@@ -75,6 +113,9 @@ class ScopaDeck:
 
     def cards_left(self) -> bool:
         return len(self.__cards) > 0
+
+    def refresh_deck(self):
+        self.__cards = self.__get_new_deck()
 
 
 

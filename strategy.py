@@ -1,7 +1,6 @@
 from cards import ScopaCard, ScopaSuit, ScopaRank, get_prime_points
 from itertools import combinations
 from enum import Enum
-import random
 
 
 class ScopaMoveType(Enum):
@@ -18,7 +17,7 @@ class ScopaMove:
             raise ValueError('Board cards cannot be None or empty if move type is TAKE')
         self.__move_type = move_type
         self.__hand_card = hand_card
-        self.__board_cards = list(board_cards)
+        self.__board_cards = list(board_cards) if board_cards else None
 
     def move_type(self) -> ScopaMoveType:
         return self.__move_type
@@ -77,13 +76,12 @@ class ScopaStrategy:
                     combo_ranks = [int(bc.rank()) for bc in combo]
                     if sum(combo_ranks) == hc.rank():
                         move = ScopaMove(ScopaMoveType.TAKE, hc, list(combo))
+                        move_type = ScopaMoveType.TAKE
                         potential_moves.append(move)
 
         if not potential_moves:
             move_type = ScopaMoveType.DISCARD
-            for hc in hand:
-                move = ScopaMove(ScopaMoveType.DISCARD, hc)
-                potential_moves.append(move)
+            potential_moves = [ScopaMove(ScopaMoveType.DISCARD, hc) for hc in hand]
 
         return potential_moves, move_type
 
