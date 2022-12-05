@@ -1,7 +1,6 @@
 from cards import *
 from player import ScopaPlayer
 from strategy import ScopaMove, ScopaMoveType
-from collections import defaultdict
 import sys
 
 
@@ -11,7 +10,6 @@ class ScopaGame:
                  winning_score: int = 11,
                  hand_size: int = 3,
                  board_size: int = 4):
-
         self.__deck = ScopaDeck()
         self.__deck.shuffle()
         self.__board = []
@@ -49,40 +47,7 @@ class ScopaGame:
                         self.__evaluate_move(move, player, scores)
                         print(f'New hand: {[str(card) for card in  player.get_hand()]}')
 
-            # Card Count
-            most_cards, most_cards_player = -sys.maxsize, None
-            for player in self.__players:
-                if len(player.get_captured_cards()) > most_cards:
-                    most_cards = len(player.get_captured_cards())
-                    most_cards_player = player
-            scores[most_cards_player] += 1
-
-            # Coin Count
-            most_coins, most_coins_player = -sys.maxsize, None
-            for player in self.__players:
-                if player.get_num_coins_captured() > most_coins:
-                    most_coins = player.get_num_coins_captured()
-                    most_coins_player = player
-            scores[most_coins_player] += 1
-
-            # Seven of Coins
-            for player in self.__players:
-                if ScopaCard(ScopaRank.SEVEN, ScopaSuit.COINS) in player.get_captured_cards():
-                    scores[player] += 1
-                    break
-
-            # Primes
-            highest_prime_sum, highest_prime_sum_player = -sys.maxsize, None
-            for player in self.__players:
-                prime_sum = 0
-                for suit in ScopaSuit:
-                    prime_sum += max([get_prime_points(card.rank()) for card in player.get_captured_cards()
-                                      if card.suit() == suit])
-                if prime_sum > highest_prime_sum:
-                    highest_prime_sum = prime_sum
-                    highest_prime_sum_player = player
-            scores[highest_prime_sum_player] += 1
-
+            self.__update_scores(scores)
             winner = self.__winning_player(scores)
 
         print(f'{winner} wins! Final scores: {[f"{player}: {score}" for player, score in scores.items()]}')
@@ -121,3 +86,37 @@ class ScopaGame:
             return
 
         raise ValueError(f'Invalid move type f{move.move_type()}')
+
+    def __update_scores(self, scores: dict[ScopaPlayer, int]):
+        # Card Count
+        most_cards, most_cards_player = -sys.maxsize, None
+        for player in self.__players:
+            num_captured = len(player.get_captured_cards())
+            most_cards, most_cards_player = max((most_cards, most_cards_player), (num_captured, player),
+                                                key=lambda x: x[0])
+        scores[most_cards_player] += 1
+
+        # Coin Count
+        most_coins, most_coins_player = -sys.maxsize, None
+        for player in self.__players:
+            num_coins = player.get_num_coins_captured()
+            most_coins, most_coins_player = max((most_coins, most_coins_player), (num_coins, player),
+                                                key=lambda x: x[0])
+        scores[most_coins_player] += 1
+
+        # Seven of Coins
+        for player in self.__players:
+            if ScopaCard(ScopaRank.SEVEN, ScopaSuit.COINS) in player.get_captured_cards():
+                scores[player] += 1
+                break
+
+        # Primes
+        highest_prime_sum, highest_prime_sum_player = -sys.maxsize, None
+        for player in self.__players:
+            prime_sum = 0
+            for suit in ScopaSuit:
+                prime_sum += max([get_prime_points(card.rank()) for card in player.get_captured_cards()
+                                  if card.suit() == suit])
+            highest_prime_sum, highest_prime_sum_player = max((highest_prime_sum, highest_prime_sum_player),
+                                                              (prime_sum, player), key=lambda x: x[0])
+        scores[highest_prime_sum_player] += 1
