@@ -7,7 +7,7 @@ def main():
     brenna = ScopaPlayer('Brenna', show_hand=False)
     andreas = ScopaPlayer('Andreas', show_hand=False)
 
-    game = ScopaGame(players=[brenna, kenny, andreas], winning_score=11)
+    game = ScopaGame(players=[brenna, kenny, andreas], winning_score=11, board_size=8)
     game.start_game()
 
 

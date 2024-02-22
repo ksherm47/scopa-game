@@ -3,14 +3,14 @@ import re
 from cards import ScopaCardRank, ScopaCard, ScopaCardSuit
 from strategy import ScopaMove, ScopaMoveType
 
-__HAND_CARD = "hand_card"
-__BOARD_CARDS = "board_cards"
-__MOVE_TYPE = "move_type"
+__HAND_CARD_GROUP = "hand_card"
+__BOARD_CARDS_GROUP = "board_cards"
+__MOVE_TYPE_GROUP = "move_type"
 
-__MOVE_TYPE_FORMAT = fr'(?P<{__MOVE_TYPE}>[TtDd])'
-__SCOPA_CARD_FORMAT = '[aA234567JjQqKk](([Cc][Uu])|([Cc][Oo])|([Ss][Ww]?)|([Cc][Ll]))'
-__HAND_CARD_FORMAT = fr'(?P<{__HAND_CARD}>{__SCOPA_CARD_FORMAT})'
-__BOARD_CARDS_FORMAT = fr'(?P<{__BOARD_CARDS}>{__SCOPA_CARD_FORMAT}(,{__SCOPA_CARD_FORMAT})*)'
+__MOVE_TYPE_FORMAT = fr'(?P<{__MOVE_TYPE_GROUP}>[TtDd])'
+__SCOPA_CARD_FORMAT = r'[Aa234567JjQqKk](([Cc][Uu])|([Cc][Oo])|([Ss][Ww]?)|([Cc][Ll]))'
+__HAND_CARD_FORMAT = fr'(?P<{__HAND_CARD_GROUP}>{__SCOPA_CARD_FORMAT})'
+__BOARD_CARDS_FORMAT = fr'(?P<{__BOARD_CARDS_GROUP}>{__SCOPA_CARD_FORMAT}(,{__SCOPA_CARD_FORMAT})*)'
 
 __SCOPA_MOVE_FORMAT = fr'{__MOVE_TYPE_FORMAT},{__HAND_CARD_FORMAT}(,{__BOARD_CARDS_FORMAT})?'
 
@@ -47,10 +47,10 @@ def parse_move(move_str: str) -> ScopaMove:
     if not match:
         raise ValueError('Move string is not valid')
 
-    move_type = __STR_TO_TYPE[match.group(__MOVE_TYPE).lower()]
-    hand_card = __parse_card_str(match.group(__HAND_CARD).lower())
+    move_type = __STR_TO_TYPE[match.group(__MOVE_TYPE_GROUP).lower()]
+    hand_card = __parse_card_str(match.group(__HAND_CARD_GROUP).lower())
 
-    board_cards_str = match.group(__BOARD_CARDS)
+    board_cards_str = match.group(__BOARD_CARDS_GROUP)
     board_cards = None
     if board_cards_str:
         board_cards = [__parse_card_str(card) for card in board_cards_str.lower().split(',')]

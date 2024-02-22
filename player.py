@@ -18,9 +18,9 @@ class ScopaPlayer:
         self.__coins_captured = 0
         self.__scopas = 0
 
-        self.__move_input = move_input
-        if self.__move_input not in ScopaPlayer.__supported_move_inputs:
-            self.__move_input = 'list'
+        if move_input.lower() not in ScopaPlayer.__supported_move_inputs:
+            raise ValueError(f'Unsupported move input selected for player. Must be one of {ScopaPlayer.__supported_move_inputs}')
+        self.__move_input = move_input.lower()
 
     def hand_is_empty(self) -> bool:
         return not self.__hand
@@ -54,8 +54,6 @@ class ScopaPlayer:
                 selected_index = input('Select move to make: ')
 
             return potential_moves[selected_index]
-
-        raise ValueError(f'Unsupported move input selected for player ({self.__move_input})')
 
     def name(self) -> str:
         return self.__name

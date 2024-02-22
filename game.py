@@ -58,6 +58,9 @@ class ScopaGame:
                                 print(f'Invalid move: {ve}')
 
                         print(f'Move made: {move}')
+                        if not self.__board:
+                            print('SCOPA!!!!!!!!!!!!!!')
+                            player.add_scopa()
                         if player.show_hand():
                             print(f'New hand: {[str(card) for card in player.get_hand()]}')
 
@@ -69,11 +72,11 @@ class ScopaGame:
             winners = self.__winning_players(scores)
 
         final_scores = [f'{player}: {score}' for player, score in scores.items()]
-        if len(winners) == 1:
-            print(f'{winners[0]} wins! Final scores: {final_scores}')
+        if len(winners) > 1:
+            print(' and '.join(winners) + f' tie! Final scores: {final_scores}')
             return
 
-        print(' and '.join(winners) + f' tie! Final scores: {final_scores}')
+        print(f'{winners[0]} wins! Final scores: {final_scores}')
 
     def __winning_players(self, scores: dict[ScopaPlayer, int]):
         best_score = max(scores.values())
@@ -106,9 +109,6 @@ class ScopaGame:
             for board_card in move.board_cards():
                 self.__board.remove(board_card)
 
-            if not self.__board:
-                print('SCOPA!!!!!!!!!!!!!!')
-                player.add_scopa()
             return
 
         if move.move_type() == ScopaMoveType.DISCARD:
