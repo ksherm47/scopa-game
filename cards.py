@@ -2,14 +2,14 @@ from enum import IntEnum, Enum
 import random
 
 
-class ScopaSuit(Enum):
+class ScopaCardSuit(Enum):
     COINS = 0,
     CUPS = 1,
     SWORDS = 2,
     CLUBS = 3
 
 
-class ScopaRank(IntEnum):
+class ScopaCardRank(IntEnum):
     ACE = 1,
     TWO = 2,
     THREE = 3,
@@ -22,71 +22,58 @@ class ScopaRank(IntEnum):
     KING = 10
 
 
-def get_prime_points(rank: ScopaRank) -> int:
-    if rank == ScopaRank.ACE:
-        return 16
-    if rank == ScopaRank.TWO:
-        return 12
-    if rank == ScopaRank.THREE:
-        return 13
-    if rank == ScopaRank.FOUR:
-        return 14
-    if rank == ScopaRank.FIVE:
-        return 15
-    if rank == ScopaRank.SIX:
-        return 18
-    if rank == ScopaRank.SEVEN:
-        return 21
-    if rank == ScopaRank.JACK or rank == ScopaRank.QUEEN or rank == ScopaRank.KING:
-        return 10
+__PRIME_POINTS = {
+    ScopaCardRank.ACE: 16,
+    ScopaCardRank.TWO: 12,
+    ScopaCardRank.THREE: 13,
+    ScopaCardRank.FOUR: 14,
+    ScopaCardRank.FIVE: 15,
+    ScopaCardRank.SIX: 18,
+    ScopaCardRank.SEVEN: 21,
+    ScopaCardRank.JACK: 10,
+    ScopaCardRank.QUEEN: 10,
+    ScopaCardRank.KING: 10
+}
+
+
+def get_prime_points(rank: ScopaCardRank) -> int:
+    return __PRIME_POINTS[rank]
 
 
 class ScopaCard:
 
-    def __init__(self, rank: ScopaRank, suit: ScopaSuit):
+    __rank_strs = {
+        ScopaCardRank.ACE: 'A',
+        ScopaCardRank.TWO: '2',
+        ScopaCardRank.THREE: '3',
+        ScopaCardRank.FOUR: '4',
+        ScopaCardRank.FIVE: '5',
+        ScopaCardRank.SIX: '6',
+        ScopaCardRank.SEVEN: '7',
+        ScopaCardRank.JACK: 'J',
+        ScopaCardRank.QUEEN: 'Q',
+        ScopaCardRank.KING: 'K'
+    }
+
+    __suit_strs = {
+        ScopaCardSuit.COINS: '\u25ef',
+        ScopaCardSuit.CUPS: '\U0001F377',
+        ScopaCardSuit.CLUBS: '\u2663',
+        ScopaCardSuit.SWORDS: '\u2694'
+    }
+
+    def __init__(self, rank: ScopaCardRank, suit: ScopaCardSuit):
         self.__rank = rank
         self.__suit = suit
 
-    def rank(self) -> ScopaRank:
+    def rank(self) -> ScopaCardRank:
         return self.__rank
 
-    def suit(self) -> ScopaSuit:
+    def suit(self) -> ScopaCardSuit:
         return self.__suit
 
-    def __rank_str(self):
-        if self.__rank == ScopaRank.ACE:
-            return 'A'
-        if self.__rank == ScopaRank.TWO:
-            return '2'
-        if self.__rank == ScopaRank.THREE:
-            return '3'
-        if self.__rank == ScopaRank.FOUR:
-            return '4'
-        if self.__rank == ScopaRank.FIVE:
-            return '5'
-        if self.__rank == ScopaRank.SIX:
-            return '6'
-        if self.__rank == ScopaRank.SEVEN:
-            return '7'
-        if self.__rank == ScopaRank.JACK:
-            return 'J'
-        if self.__rank == ScopaRank.QUEEN:
-            return 'Q'
-        if self.__rank == ScopaRank.KING:
-            return 'K'
-
-    def __suit_str(self):
-        if self.__suit == ScopaSuit.COINS:
-            return '\u25ef'
-        if self.__suit == ScopaSuit.CUPS:
-            return '\U0001F377'
-        if self.__suit == ScopaSuit.CLUBS:
-            return '\u2663'
-        if self.__suit == ScopaSuit.SWORDS:
-            return '\u2694'
-
     def __str__(self):
-        return f'{self.__rank_str()}{self.__suit_str()}'
+        return f'{ScopaCard.__rank_strs[self.__rank]}{ScopaCard.__suit_strs[self.__suit]}'
 
     def __eq__(self, other_card):
         return self.__suit == other_card.__suit and self.__rank == other_card.__rank
@@ -98,11 +85,7 @@ class ScopaCard:
 class ScopaDeck:
 
     def __init__(self):
-        self.__cards = self.__get_new_deck()
-
-    def __get_new_deck(self) -> list[ScopaCard]:
-        deck = [ScopaCard(rank, suit) for rank in ScopaRank for suit in ScopaSuit]
-        return deck
+        self.__cards = [ScopaCard(rank, suit) for rank in ScopaCardRank for suit in ScopaCardSuit]
 
     def shuffle(self):
         random.shuffle(self.__cards)
@@ -115,7 +98,7 @@ class ScopaDeck:
         return len(self.__cards) > 0
 
     def refresh_deck(self):
-        self.__cards = self.__get_new_deck()
+        self.__cards = [ScopaCard(rank, suit) for rank in ScopaCardRank for suit in ScopaCardSuit]
 
 
 

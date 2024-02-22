@@ -3,10 +3,11 @@ from player import ScopaPlayer
 
 
 def main():
-    kenny = ScopaPlayer('Kenny')
-    brenna = ScopaPlayer('Brenna')
+    kenny = ScopaPlayer('Kenny', human=True)
+    brenna = ScopaPlayer('Brenna', show_hand=False)
+    andreas = ScopaPlayer('Andreas', show_hand=False)
 
-    game = ScopaGame(players=[kenny, brenna])
+    game = ScopaGame(players=[brenna, kenny, andreas], winning_score=11)
     game.start_game()
 
 
