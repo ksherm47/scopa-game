@@ -31,21 +31,48 @@ class ScopaMove:
         return self.__board_cards
 
     def __str__(self):
-        move_str = f'{self.__move_type.name}: {self.__hand_card}'
+        move_str = f'{self.__move_type.name} {self.__hand_card}'
         if self.__move_type == ScopaMoveType.TAKE:
             move_str += ' -> ' + ', '.join([str(bc) for bc in self.__board_cards])
         return move_str
 
 
+def get_all_valid_moves(scopa_board: list[ScopaCard], hand: list[ScopaCard]) -> list[ScopaMove]:
+    potential_moves = []
+    single_take = set()
+
+    for hc in hand:
+        for bc in scopa_board:
+            if bc.rank() == hc.rank():
+                potential_moves.append(ScopaMove(ScopaMoveType.TAKE, hc, [bc]))
+                single_take.add(hc)
+
+    board_card_combos = []
+    for combo_num in range(2, len(scopa_board) + 1):
+        board_card_combos.extend(tuple(combinations(scopa_board, combo_num)))
+
+    for hc in hand:
+        if hc not in single_take:
+            for combo in board_card_combos:
+                if sum(bc.rank() for bc in combo) == hc.rank():
+                    potential_moves.append(ScopaMove(ScopaMoveType.TAKE, hc, list(combo)))
+
+    if not potential_moves:
+        potential_moves = [ScopaMove(ScopaMoveType.DISCARD, hc) for hc in hand]
+
+    return potential_moves
+
+
 class ScopaStrategy:
 
-    __possible_strategies = {'default'}
+    DEFAULT = 'DEFAULT'
+    __SUPPORTED_STRATEGIES = {DEFAULT}
 
-    def __init__(self, strategy: str = 'default'):
-        if strategy not in ScopaStrategy.__possible_strategies:
-            raise ValueError(f'Strategy {strategy} not implemented')
+    def __init__(self, strategy: str = DEFAULT):
+        if strategy not in ScopaStrategy.__SUPPORTED_STRATEGIES:
+            raise ValueError(f'Strategy {strategy} not supported. Must be one of {ScopaStrategy.__SUPPORTED_STRATEGIES}.')
 
-        if strategy == 'default':
+        if strategy == ScopaStrategy.DEFAULT:
             self.__scopa_weight = 2
             self.__cards_weight = 1
             self.__coins_weight = 1
@@ -54,34 +81,19 @@ class ScopaStrategy:
             self.__discard_highest_weight = 0
             self.__discard_lowest_weight = 0
 
-    @staticmethod
-    def get_potential_moves(scopa_board: list[ScopaCard], hand: list[ScopaCard]) -> list[ScopaMove]:
-        potential_moves = []
-        single_take = set()
+    def make_move(self, scopa_board: list[ScopaCard], hand: list[ScopaCard]) -> ScopaMove:
+        if not hand:
+            raise ValueError('Cannot make move with empty hand')
 
-        for hc in hand:
-            for bc in scopa_board:
-                if bc.rank() == hc.rank():
-                    move = ScopaMove(ScopaMoveType.TAKE, hc, [bc])
-                    potential_moves.append(move)
-                    single_take.add(hc)
+        potential_moves = get_all_valid_moves(scopa_board, hand)
 
-        board_card_combos = []
-        for combo_num in range(2, 5):
-            board_card_combos.extend(tuple(combinations(scopa_board, combo_num)))
+        if len(potential_moves) == 1:
+            return potential_moves[0]
 
-        for hc in hand:
-            if hc not in single_take:
-                for combo in board_card_combos:
-                    combo_ranks = [int(bc.rank()) for bc in combo]
-                    if sum(combo_ranks) == hc.rank():
-                        move = ScopaMove(ScopaMoveType.TAKE, hc, list(combo))
-                        potential_moves.append(move)
+        scores = self.__get_move_scores(potential_moves, scopa_board)
+        best_move, _ = max(list(zip(potential_moves, scores)), key=lambda x: x[1])
 
-        if not potential_moves:
-            potential_moves = [ScopaMove(ScopaMoveType.DISCARD, hc) for hc in hand]
-
-        return potential_moves
+        return best_move
 
     def __get_move_scores(self, potential_moves: list[ScopaMove], board: list[ScopaCard]) -> list[int]:
         scores = [0] * len(potential_moves)
@@ -93,7 +105,6 @@ class ScopaStrategy:
             highest_prime = 0
 
             for i, pm in enumerate(potential_moves):
-
                 cards_to_take = list(pm.board_cards())
                 cards_to_take.append(pm.hand_card())
 
@@ -152,17 +163,3 @@ class ScopaStrategy:
             raise ValueError(f'Move type {move_type} not supported')
 
         return scores
-
-    def make_move(self, scopa_board: list[ScopaCard], hand: list[ScopaCard]) -> ScopaMove:
-        if not hand:
-            raise ValueError('Cannot make move with empty hand')
-
-        potential_moves = ScopaStrategy.get_potential_moves(scopa_board, hand)
-
-        if len(potential_moves) == 1:
-            return potential_moves[0]
-
-        scores = self.__get_move_scores(potential_moves, scopa_board)
-        best_move, _ = max(list(zip(potential_moves, scores)), key=lambda x: x[1])
-
-        return best_move

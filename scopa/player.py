@@ -1,14 +1,16 @@
-from cards import ScopaCard, ScopaCardSuit
-from strategy import ScopaStrategy, ScopaMove
+from scopa.cards import ScopaCard, ScopaCardSuit
+from scopa.strategy import ScopaStrategy, ScopaMove, get_all_valid_moves
 import moveparser
 
 
 class ScopaPlayer:
 
-    __supported_move_inputs = {'text', 'list'}
+    __TEXT_INPUT = 'text'
+    __SELECT_FROM_LIST = 'select_from_list'
+    __SUPPORTED_MOVE_INPUTS = {__TEXT_INPUT, __SELECT_FROM_LIST}
 
-    def __init__(self, name, strategy: str = 'default', human: bool = False, show_hand: bool = True,
-                 move_input: str = 'list'):
+    def __init__(self, name, strategy: str = ScopaStrategy.DEFAULT, human: bool = False, show_hand: bool = True,
+                 move_input: str = __SELECT_FROM_LIST):
         self.__hand = []
         self.__captures = set()
         self.__strategy = ScopaStrategy(strategy)
@@ -18,8 +20,8 @@ class ScopaPlayer:
         self.__coins_captured = 0
         self.__scopas = 0
 
-        if move_input.lower() not in ScopaPlayer.__supported_move_inputs:
-            raise ValueError(f'Unsupported move input selected for player. Must be one of {ScopaPlayer.__supported_move_inputs}')
+        if move_input.lower() not in ScopaPlayer.__SUPPORTED_MOVE_INPUTS:
+            raise ValueError(f'Unsupported move input selected for player. Must be one of {ScopaPlayer.__SUPPORTED_MOVE_INPUTS}')
         self.__move_input = move_input.lower()
 
     def hand_is_empty(self) -> bool:
@@ -32,7 +34,7 @@ class ScopaPlayer:
         if not self.__human:
             return self.__strategy.make_move(scopa_board, self.__hand)
 
-        if self.__move_input == 'text':
+        if self.__move_input == ScopaPlayer.__TEXT_INPUT:
             move_input = input('Enter move: ')
             move = None
             while not move:
@@ -43,8 +45,8 @@ class ScopaPlayer:
                     move_input = input('Enter move: ')
             return move
 
-        if self.__move_input == 'list':
-            moves = ScopaStrategy.get_potential_moves(scopa_board, self.__hand)
+        if self.__move_input == ScopaPlayer.__SELECT_FROM_LIST:
+            moves = get_all_valid_moves(scopa_board, self.__hand)
             potential_moves = {str(index): move for index, move in zip(range(1, len(moves) + 1), moves)}
             for index, move in potential_moves.items():
                 print(f'{index}: {move}')
